@@ -1,6 +1,9 @@
 import TestInsertButton from "@/components/test-insert-button";
+import TestRemoveButton from "@/components/test-remove-button";
+import { createClient } from "@/lib/supabase/server";
 
 export default function Home() {
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col gap-6 items-center">
@@ -12,6 +15,7 @@ export default function Home() {
 
         {/* This component IS the button */}
         <TestInsertButton />
+        <TestRemoveButton />
       </div>
     </main>
   );
