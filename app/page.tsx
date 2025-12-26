@@ -1,5 +1,6 @@
 import CourseSearch from "@/components/course-search";
 import RemoveCourseButton from "@/components/remove-course-button";
+import { LoginForm } from "@/components/login-form";
 import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 
@@ -12,11 +13,7 @@ async function CoursesData() {
     .order("name", { ascending: true });
 
   if (error) {
-    return (
-      <p className="text-red-200">
-        Failed to load courses: {error.message}
-      </p>
-    );
+    return <p className="text-red-200">Failed to load courses: {error.message}</p>;
   }
 
   if (!courses || courses.length === 0) {
@@ -42,8 +39,8 @@ async function CoursesData() {
               <p className="text-sm text-white/80">
                 {[course.city, course.state].filter(Boolean).join(", ") ||
                   "Location unknown"}
-                  {course.holes ? ` • ${course.holes} holes` : ""}
-                  {course.access ? ` • ${course.access}` : ""}
+                {course.holes ? ` • ${course.holes} holes` : ""}
+                {course.access ? ` • ${course.access}` : ""}
               </p>
             </div>
 
@@ -55,50 +52,75 @@ async function CoursesData() {
   );
 }
 
+// ✅ Auth gate runs inside Suspense, so cookies() access is allowed
+async function AuthedHome() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen w-full bg-black/50 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md">
+          <LoginForm />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-black/50">
+      <div className="w-full max-w-5xl px-6 py-12 flex flex-col gap-10 mx-auto">
+        <header className="flex flex-col gap-2">
+          <h1 className="text-4xl font-bold tracking-tight text-white">
+            Sammy Fairways ⛳️
+          </h1>
+          <p className="text-white/80 max-w-xl">
+            A personal log of golf courses I’ve played.
+          </p>
+        </header>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold text-white">Add a Course</h2>
+          <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-4">
+            <CourseSearch />
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold text-white">Courses Played</h2>
+
+          <Suspense
+            fallback={
+              <div className="grid gap-4 sm:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-28 rounded-xl bg-white/10 animate-pulse" />
+                ))}
+              </div>
+            }
+          >
+            <CoursesData />
+          </Suspense>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main
       className="min-h-screen flex justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/background.webp')" }}
     >
-      <div className="min-h-screen w-full bg-black/50">
-        <div className="w-full max-w-5xl px-6 py-12 flex flex-col gap-10 mx-auto">
-          <header className="flex flex-col gap-2">
-            <h1 className="text-4xl font-bold tracking-tight text-white">
-              Sammy Fairways ⛳️
-            </h1>
-            <p className="text-white/80 max-w-xl">
-              A personal log of golf courses I’ve played.
-            </p>
-          </header>
-
-          <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold text-white">Add a Course</h2>
-            <div className="rounded-xl bg-white/10 backdrop-blur border border-white/15 p-4">
-              <CourseSearch />
-            </div>
-          </section>
-
-          <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold text-white">Courses Played</h2>
-
-            <Suspense
-              fallback={
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-28 rounded-xl bg-white/10 animate-pulse"
-                    />
-                  ))}
-                </div>
-              }
-            >
-              <CoursesData />
-            </Suspense>
-          </section>
-        </div>
-      </div>
+      <Suspense
+        fallback={
+          <div className="min-h-screen w-full bg-black/50 flex items-center justify-center">
+            <div className="h-10 w-48 rounded bg-white/10 animate-pulse" />
+          </div>
+        }
+      >
+        <AuthedHome />
+      </Suspense>
     </main>
   );
 }
