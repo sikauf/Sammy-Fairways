@@ -8,7 +8,7 @@ async function CoursesData() {
 
   const { data: courses, error } = await supabase
     .from("courses")
-    .select("id, name, city, state")
+    .select("id, name, city, state, holes, access")
     .order("name", { ascending: true });
 
   if (error) {
@@ -42,6 +42,8 @@ async function CoursesData() {
               <p className="text-sm text-white/80">
                 {[course.city, course.state].filter(Boolean).join(", ") ||
                   "Location unknown"}
+                  {course.holes ? ` • ${course.holes} holes` : ""}
+                  {course.access ? ` • ${course.access}` : ""}
               </p>
             </div>
 

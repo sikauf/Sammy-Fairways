@@ -39,7 +39,7 @@ export default function CourseSearch() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder='Try "Pebble", "Ann Arbor", or "MI"...'
+          placeholder='Try "Pebble", "Scottsdale", or "NY"...'
           className="border rounded-md px-3 py-2 text-sm"
         />
 
@@ -63,10 +63,12 @@ export default function CourseSearch() {
             className="border rounded-lg p-4 flex items-center justify-between gap-4"
           >
             <div className="min-w-0">
-              <div className="font-medium truncate">{c.name}</div>
-              <div className="text-sm text-muted-foreground truncate">
-                {[c.city, c.state].filter(Boolean).join(", ") || "Location unknown"}
-              </div>
+                <div className="font-medium truncate">{c.name}</div>
+                <div className="text-sm text-muted-foreground truncate">
+                    {[c.city, c.state].filter(Boolean).join(", ") || "Location unknown"}
+                    {c.holes ? ` • ${c.holes} holes` : ""}
+                    {c.access ? ` • ${c.access}` : ""}
+                </div>
             </div>
 
             <button
